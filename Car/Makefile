@@ -1,0 +1,2 @@
+COMPONENT=CarSerialC
+include $(MAKERULES)
