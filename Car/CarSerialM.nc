@@ -9,21 +9,21 @@ module CarSerialM {
 }
 
 implementation {
-	uint8_t busy = 0;
+	bool busy = FALSE;
 	enum {
 		header0 = 0x01,
 		header1 = 0x02,
 		footer0 = 0xFF,
 		footer1 = 0xFF,
 		footer2 = 0x00,
-		lenMsg = 8
+		lenMsg = 0x08
 	};
 	// const uint8_t header0 = 0x01;
 	// const uint8_t header1 = 0x02;
 	// const uint8_t footer0 = 0xFF;
 	// const uint8_t footer1 = 0xFF;
 	// const uint8_t footer2 = 0x00;
-	// const uint8_t lenMsg = 8;
+	// const uint8_t lenMsg = 0x08;
 	uint8_t msg[lenMsg];
 
 	msp430_uart_union_config_t config = {
@@ -71,7 +71,7 @@ implementation {
 
     	sendMsg();
     	call Resource.release();
-    	atomic busy = 0;
+    	atomic busy = FALSE;
 
     }
 
@@ -84,10 +84,10 @@ implementation {
     }
 
     error_t doSendMsg(uint8_t typeByte, uint8_t lowByte, uint8_t highByte) {
-    	if (busy != 0)
+    	if (busy)
     		return EBUSY;
 
-    	atomic busy = 1; 
+    	atomic busy = TRUE; 
     	setHeaderFooter();
     	// set type
     	msg[2] = typeByte;
@@ -126,21 +126,38 @@ implementation {
     	return doSendMsg(0x06, 0x00, 0x00);
     }
 
-    command error_t CarSerial.Angle_First(uint16_t value) {
+    command error_t CarSerial.Angle(uint16_t value, uint8_t id) {
     	uint8_t lowByte = (value & 0xFF);
     	uint8_t highByte = (value >> 8);
-    	return doSendMsg(0x01, lowByte, highByte);
+    	uint8_t ret = FAIL;
+    	switch (id):
+    		case 0:
+    			ret = doSendMsg(0x01, lowByte, highByte);
+    			break;
+    		case 1:
+    			ret = doSendMsg(0x07, lowByte, highByte)
+    			break;
+    		case 2:
+    			ret = doSendMsg(0x08, lowByte, highByte)
+    			break;
+    	return ret;
     }
 
-    command error_t CarSerial.Angle_Secon(uint16_t value) {
-    	uint8_t lowByte = (value & 0xFF);
-    	uint8_t highByte = (value >> 8);
-    	return doSendMsg(0x07, lowByte, highByte);
-    }
+    // command error_t CarSerial.Angle_First(uint16_t value) {
+    // 	uint8_t lowByte = (value & 0xFF);
+    // 	uint8_t highByte = (value >> 8);
+    // 	return doSendMsg(0x01, lowByte, highByte);
+    // }
 
-    command error_t CarSerial.Angle_Third(uint16_t value) {
-    	uint8_t lowByte = (value & 0xFF);
-    	uint8_t highByte = (value >> 8);
-    	return doSendMsg(0x08, lowByte, highByte);
-    }
+    // command error_t CarSerial.Angle_Secon(uint16_t value) {
+    // 	uint8_t lowByte = (value & 0xFF);
+    // 	uint8_t highByte = (value >> 8);
+    // 	return doSendMsg(0x07, lowByte, highByte);
+    // }
+
+    // command error_t CarSerial.Angle_Third(uint16_t value) {
+    // 	uint8_t lowByte = (value & 0xFF);
+    // 	uint8_t highByte = (value >> 8);
+    // 	return doSendMsg(0x08, lowByte, highByte);
+    // }
 }

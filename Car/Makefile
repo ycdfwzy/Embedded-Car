@@ -1,2 +1,2 @@
-COMPONENT=CarSerialC
+COMPONENT=NetComC
 include $(MAKERULES)
