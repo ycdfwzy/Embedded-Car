@@ -59,9 +59,17 @@ implementation {
     }
     // send all message
     void sendMsg() {
-    	uint8_t i;
-    	for (i = 0; i < lenMsg; i = i+1)
-    		sendMsgB(i);
+    	// uint8_t i;
+    	// for (i = 0; i < lenMsg; i = i+1)
+    	// 	sendMsgB(i);
+        sendMsgB(0);
+        sendMsgB(1);
+        sendMsgB(2);
+        sendMsgB(3);
+        sendMsgB(4);
+        sendMsgB(5);
+        sendMsgB(6);
+        sendMsgB(7);
     }
 
     event void Resource.granted() {

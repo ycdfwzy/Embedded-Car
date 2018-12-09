@@ -11,6 +11,7 @@ enum AngleConst {
 	ANGLE_MIN = 1800,
 	ANGLE_MAX = 5000,
 	ANGLE_DELTA = 500,
+	ANGLE_DEFAULT = 3000,
 };
 
 enum OPNumber {

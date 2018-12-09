@@ -1,0 +1,2 @@
+COMPONENT=NetComC
+include $(MAKERULES)
