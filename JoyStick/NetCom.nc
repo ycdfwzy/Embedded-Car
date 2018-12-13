@@ -73,7 +73,7 @@ implementation {
 		}
 		// msg->angle_first = ANGLE_NOP;
 		// msg->angle_secon = ANGLE_NOP;
-		angle_secon
+		// angle_secon
 		if (PortC == 0 && PortD != 0) {
 			msg->angle_secon = ANGLE_UP;
 		} else
@@ -83,7 +83,7 @@ implementation {
 		{
 			msg->angle_secon = ANGLE_NOP;
 		}
-		angle_third
+		// angle_third
 		if (PortE == 0 && PortF != 0) {
 			msg->angle_third = ANGLE_UP;
 		} else
