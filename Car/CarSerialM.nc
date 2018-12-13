@@ -138,16 +138,17 @@ implementation {
     	uint8_t lowByte = (value & 0xFF);
     	uint8_t highByte = (value >> 8);
     	uint8_t ret = FAIL;
-    	switch (id):
+    	switch (id){
     		case 0:
     			ret = doSendMsg(0x01, lowByte, highByte);
     			break;
     		case 1:
-    			ret = doSendMsg(0x07, lowByte, highByte)
+    			ret = doSendMsg(0x07, lowByte, highByte);
     			break;
     		case 2:
-    			ret = doSendMsg(0x08, lowByte, highByte)
+    			ret = doSendMsg(0x08, lowByte, highByte);
     			break;
+            }
     	return ret;
     }
 

@@ -21,6 +21,7 @@ module NetCom {
 implementation {
 	bool busy = FALSE;
 	bool initialAngle = FALSE;
+	uint8_t preMove = MOVE_NOP;
 	
 	uint16_t valX;
 	uint16_t valY;
@@ -60,14 +61,19 @@ implementation {
 		// angle_first
 		if (PortA == 0 && PortB != 0) {
 			msg->angle_first = ANGLE_UP;
+			// msg->angle_third = ANGLE_UP;
 		} else
 		if (PortA != 0 && PortB == 0) {
 			msg->angle_first = ANGLE_DOWN;
+			// msg->angle_third = ANGLE_DOWN;
 		} else
 		{
 			msg->angle_first = ANGLE_NOP;
+			// msg->angle_third = ANGLE_NOP;
 		}
-		// angle_secon
+		// msg->angle_first = ANGLE_NOP;
+		// msg->angle_secon = ANGLE_NOP;
+		angle_secon
 		if (PortC == 0 && PortD != 0) {
 			msg->angle_secon = ANGLE_UP;
 		} else
@@ -77,7 +83,7 @@ implementation {
 		{
 			msg->angle_secon = ANGLE_NOP;
 		}
-		// angle_third
+		angle_third
 		if (PortE == 0 && PortF != 0) {
 			msg->angle_third = ANGLE_UP;
 		} else
@@ -89,27 +95,39 @@ implementation {
 		}
 		// move
 		if (valX > valY) {
-            if (valX <= 0xA00 && valY >= 0x600) {
+            if (valX <= 0xB00 && valY >= 0x500) {
                 msg->move = MOVE_PAUSE;
             } else
             if (valX + valY >= 0x1000) {
-                msg->move = MOVE_BACK;
+                msg->move = MOVE_LEFT; // MOVE_BACK;
             } else
             {
-                msg->move = MOVE_LEFT;
+                msg->move = MOVE_FORWARD; // MOVE_LEFT;
             }
         } else
         {
-            if (valX >= 0x600 && valY <= 0xA00) {
+            if (valX >= 0x500 && valY <= 0xB00) {
                 msg->move = MOVE_PAUSE;
             } else
             if (valX + valY >= 0x1000) {
-                msg->move = MOVE_RIGHT;
+                msg->move = MOVE_BACK; //MOVE_RIGHT;
             } else
             {
-                msg->move = MOVE_FORWARD;
+                msg->move = MOVE_RIGHT; // MOVE_FORWARD;
             }
         }
+
+        if (preMove == MOVE_PAUSE && msg->move == MOVE_PAUSE) {
+        	msg->move = MOVE_NOP;
+        } else
+        {
+        	preMove = msg->move;
+        }
+
+        // msg->angle_first = ANGLE_NOP;
+        // msg->angle_secon = ANGLE_UP;
+        // msg->angle_third = ANGLE_NOP;
+        // msg->move = MOVE_NOP;
 
         if (call INSMsgSender.send(AM_BROADCAST_ADDR, &pkt, sizeof(insMsg)) == SUCCESS) {
             atomic busy = TRUE;
@@ -174,8 +192,10 @@ implementation {
 			} else
 			{
 				post beforeSendMsg();
+				// sendMsg();
 			}
 		}
+		call Leds.led0On();
 	}
 
 	event void INSMsgSender.sendDone(message_t* msg, error_t error) {
@@ -187,10 +207,12 @@ implementation {
 	event void INIMsgSender.sendDone(message_t* msg, error_t error) {
 		if (error == SUCCESS) {
 			atomic busy = FALSE;
+			initialAngle = TRUE;
 		}
 	}
 
 	event void Button.startDone(error_t error) {
+
 		if (error == SUCCESS) {
 			call Timer.startPeriodic(LED_Periodic);
 		} else

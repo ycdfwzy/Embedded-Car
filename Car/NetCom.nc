@@ -18,6 +18,7 @@ implementation {
 	uint16_t cmd = 0;
 
 	void handle_angle_operation(uint16_t op, uint8_t id) {
+		call Leds.led2On();
 		if (op == ANGLE_UP) {
 			cmd = 5+id;
 			angle_status[id] += ANGLE_DELTA;
@@ -27,7 +28,7 @@ implementation {
 		} else
 		if (op == ANGLE_DOWN) {
 			cmd = 5+id;
-			angle_status[id] += ANGLE_DELTA;
+			angle_status[id] -= ANGLE_DELTA;
 			if (angle_status[id] < ANGLE_MIN)
 				angle_status[id] = ANGLE_MIN;
 			call CarSerial.Angle(angle_status[id], id);
@@ -38,9 +39,10 @@ implementation {
 											void* payload,
 											uint8_t len) {
 		insMsg* rcvMsg;
-		if (!busy || len != sizeof(insMsg))
+		if (busy || len != sizeof(insMsg))
 			return msg;
-
+		call Leds.led1On();
+		
 		rcvMsg = (insMsg*)payload;
 		atomic busy = TRUE;
 
@@ -61,8 +63,12 @@ implementation {
 				call CarSerial.Left(TURN_DEFAULT);
 				cmd = 4;
 				break;
-			default:
+			case MOVE_PAUSE:
 				call CarSerial.Pause();
+				cmd = 0;
+				break;
+			default:
+				// call CarSerial.Pause();
 				cmd = 0;
 		}
 
@@ -113,6 +119,7 @@ implementation {
 		{
 			call Leds.led2Off();
 		}
+		call Leds.led0On();
 	}
 
 	event void AMControl.startDone(error_t error) {
