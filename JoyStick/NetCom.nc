@@ -21,6 +21,7 @@ module NetCom {
 implementation {
 	bool busy = FALSE;
 	bool initialAngle = FALSE;
+	// uint16_t autotestcnt = 0;
 	uint8_t preMove = MOVE_NOP;
 	
 	uint16_t valX;
@@ -49,12 +50,15 @@ implementation {
 
 	void sendMsg() {
 
-		// todo: choose a reset operation
-
 		message_t pkt;
 		insMsg* msg;
 		msg = (insMsg*)(call INSPacket.getPayload(&pkt, sizeof(insMsg)));
 		if (msg == NULL) {	// no message
+			return;
+		}
+
+		if (PortA == 0 && PortB == 0) { // reset
+			post initializeAngle();
 			return;
 		}
 
@@ -99,7 +103,7 @@ implementation {
                 msg->move = MOVE_PAUSE;
             } else
             if (valX + valY >= 0x1000) {
-                msg->move = MOVE_LEFT; // MOVE_BACK;
+                msg->move = MOVE_RIGHT; // MOVE_BACK;
             } else
             {
                 msg->move = MOVE_FORWARD; // MOVE_LEFT;
@@ -113,7 +117,7 @@ implementation {
                 msg->move = MOVE_BACK; //MOVE_RIGHT;
             } else
             {
-                msg->move = MOVE_RIGHT; // MOVE_FORWARD;
+                msg->move = MOVE_LEFT; // MOVE_FORWARD;
             }
         }
 
@@ -134,7 +138,6 @@ implementation {
         }
 	}
 
-
 	task void beforeSendMsg() {
 		call ReadX.read();
 		call ReadY.read();
@@ -146,6 +149,60 @@ implementation {
 		call Button.pinvalueF();
 		sendMsg();
 	}
+
+	// task void autotest() {
+	// 	message_t pkt;
+	// 	insMsg* msg;
+	// 	msg = (insMsg*)(call INSPacket.getPayload(&pkt, sizeof(insMsg)));
+	// 	if (msg == NULL) {	// no message
+	// 		return;
+	// 	}
+
+	// 	msg->move = MOVE_NOP;
+	// 	msg->angle_first = ANGLE_NOP;
+	// 	msg->angle_secon = ANGLE_NOP;
+	// 	msg->angle_third = ANGLE_NOP;
+
+	// 	switch (autotestcnt/5){
+	// 		case 0:
+	// 			msg->move = MOVE_FORWARD;
+	// 			break;
+	// 		case 1:
+	// 			msg->move = MOVE_BACK;
+	// 			break;
+	// 		case 2:
+	// 			msg->move = MOVE_LEFT;
+	// 			break;
+	// 		case 3:
+	// 			msg->move = MOVE_RIGHT;
+	// 			break;
+	// 		case 4:
+	// 			msg->move = MOVE_PAUSE;
+	// 			break;
+	// 		case 5:
+	// 			msg->angle_first = ANGLE_UP;
+	// 			break;
+	// 		case 6:
+	// 			msg->angle_first = ANGLE_DOWN;
+	// 			break;
+	// 		case 7:
+	// 			msg->angle_secon = ANGLE_UP;
+	// 			break;
+	// 		case 8:
+	// 			msg->angle_secon = ANGLE_DOWN;
+	// 			break;
+	// 		case 9:
+	// 			msg->angle_third = ANGLE_UP;
+	// 			break;
+	// 		case 10:
+	// 			msg->angle_third = ANGLE_DOWN;
+	// 			break;
+	// 	}
+
+	// 	if (call INSMsgSender.send(AM_BROADCAST_ADDR, &pkt, sizeof(insMsg)) == SUCCESS) {
+ //            atomic busy = TRUE;
+ //        }
+	// }
 
 	event void ReadX.readDone(error_t error, uint16_t val) {
 		if (error == SUCCESS) {
@@ -187,7 +244,10 @@ implementation {
 
 	event void Timer.fired() {
 		if (!busy) {
-			if (!initialAngle){
+			// if (autotestcnt < 50) {
+			// 	post autotest();
+			// } else
+			if (!initialAngle) {
 				post initializeAngle();
 			} else
 			{
@@ -200,6 +260,7 @@ implementation {
 
 	event void INSMsgSender.sendDone(message_t* msg, error_t error) {
 		if (error == SUCCESS) {
+			// if (autotestcnt < )
 			atomic busy = FALSE;
 		}
 	}
