@@ -1,4 +1,4 @@
-// network-communication configuration
+// network-communication
 #include <Timer.h>
 #include "../configs.h"
 
@@ -16,6 +16,7 @@ module NetCom {
     uses interface Button;
     uses interface Read<uint16_t> as ReadX;
 	uses interface Read<uint16_t> as ReadY;
+	uses interface Read<uint16_t> as LightSensor;
 }
 
 implementation {
@@ -23,6 +24,7 @@ implementation {
 	bool initialAngle = FALSE;
 	// uint16_t autotestcnt = 0;
 	uint8_t preMove = MOVE_NOP;
+	uint16_t light = 0;
 	
 	uint16_t valX;
 	uint16_t valY;
@@ -33,6 +35,18 @@ implementation {
 	uint16_t PortE;
 	uint16_t PortF;
 
+	event void LightSensor.readDone(error_t error, uint16_t data) {
+        if (error != SUCCESS){
+            data = 0xffff;
+            light = 0;
+            return;
+            // call LEDBlink.report_problem();
+        }
+        light = data;
+        if (light != 0x0000) {
+        	call Leds.led0Toggle();
+        }
+    }
 
 	task void initializeAngle() {
 		message_t pkt;
@@ -255,7 +269,8 @@ implementation {
 				// sendMsg();
 			}
 		}
-		call Leds.led0On();
+		// call Leds.led0On();
+		call LightSensor.read();
 	}
 
 	event void INSMsgSender.sendDone(message_t* msg, error_t error) {

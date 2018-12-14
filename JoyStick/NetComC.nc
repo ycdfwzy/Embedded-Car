@@ -1,4 +1,4 @@
-// network-component
+// network-communication configuration
 #include <Timer.h>
 #include "../configs.h"
 
@@ -10,6 +10,7 @@ implementation {
 	components new TimerMilliC() as Timer;
 	components new AMSenderC(INSMsgID) as insSender;
     components new AMSenderC(INIMsgID) as iniSender;
+    components new HamamatsuS10871TsrC() as LightSensor;
 	components ButtonC;
 	components JoyStickC;
 	components NetCom;
@@ -25,4 +26,5 @@ implementation {
 	NetCom.INSPacket -> insSender;
 	NetCom.INIPacket -> iniSender;
 	NetCom.AMControl -> ActiveMessageC.SplitControl;
+	NetCom.LightSensor -> LightSensor;
 }

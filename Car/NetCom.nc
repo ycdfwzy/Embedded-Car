@@ -1,4 +1,4 @@
-// network-component
+// network-communication configuration
 #include "../configs.h"
 
 module NetCom {
@@ -15,10 +15,11 @@ module NetCom {
 implementation {
 	bool busy = FALSE;
 	uint16_t angle_status[3];
+	uint16_t autotestcnt = 0;
 	uint16_t cmd = 0;
 
 	void handle_angle_operation(uint16_t op, uint8_t id) {
-		call Leds.led2On();
+		// call Leds.led2On();
 		if (op == ANGLE_UP) {
 			cmd = 5+id;
 			angle_status[id] += ANGLE_DELTA;
@@ -41,7 +42,7 @@ implementation {
 		insMsg* rcvMsg;
 		if (busy || len != sizeof(insMsg))
 			return msg;
-		call Leds.led1On();
+		// call Leds.led1On();
 		
 		rcvMsg = (insMsg*)payload;
 		atomic busy = TRUE;
@@ -100,7 +101,56 @@ implementation {
 		return msg;
 	}
 
+	task void autotest() {
+		switch (autotestcnt/20) {
+			case 0:
+				call CarSerial.Forward(LINE_DEFAULT);
+				break;
+			case 1:
+				call CarSerial.Back(LINE_DEFAULT);
+				break;
+			case 2:
+				call CarSerial.Left(LINE_DEFAULT);
+				break;
+			case 3:
+				call CarSerial.Right(LINE_DEFAULT);
+				break;
+			case 4:
+				call CarSerial.Pause();
+				break;
+			case 5:
+				call CarSerial.Angle(ANGLE_MAX, 0);
+				break;
+			case 6:
+				call CarSerial.Angle(ANGLE_MIN, 0);
+				break;
+			case 7:
+				call CarSerial.Angle(ANGLE_MAX, 1);
+				break;
+			case 8:
+				call CarSerial.Angle(ANGLE_MIN, 1);
+				break;
+			case 9:
+				call CarSerial.Angle(ANGLE_MAX, 2);
+				break;
+			case 10:
+				call CarSerial.Angle(ANGLE_MIN, 2);
+				break;
+			case 11:
+				call CarSerial.Angle(ANGLE_DEFAULT, 0);
+				call CarSerial.Angle(ANGLE_DEFAULT, 1);
+				call CarSerial.Angle(ANGLE_DEFAULT, 2);
+				break;
+		}
+		autotestcnt++;
+	}
+
 	event void Timer.fired() {
+		if (autotestcnt < 240) {
+			post autotest();
+			return;
+		}
+
 		if (cmd & 1) {
 			call Leds.led0On();
 		} else
@@ -119,7 +169,7 @@ implementation {
 		{
 			call Leds.led2Off();
 		}
-		call Leds.led0On();
+		// call Leds.led0On();
 	}
 
 	event void AMControl.startDone(error_t error) {

@@ -17,8 +17,8 @@ enum AngleConst {
 enum OPNumber {
 	MOVE_FORWARD = 0,
 	MOVE_BACK = 1,
-	MOVE_RIGHT = 2,
-	MOVE_LEFT = 3,
+	MOVE_LEFT = 2,
+	MOVE_RIGHT = 3,
 	MOVE_PAUSE = 4,
 	MOVE_NOP = 8,
 
