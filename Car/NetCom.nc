@@ -17,6 +17,7 @@ implementation {
 	uint16_t angle_status[3];
 	uint16_t autotestcnt = 0;
 	uint16_t cmd = 0;
+	uint16_t reset = 0;
 
 	void handle_angle_operation(uint16_t op, uint8_t id) {
 		// call Leds.led2On();
@@ -94,9 +95,10 @@ implementation {
 			angle_status[1] = rcvMsg->angle_secon;
 			angle_status[2] = rcvMsg->angle_third;
 		}
-		call CarSerial.Angle(angle_status[0], 0);
-		call CarSerial.Angle(angle_status[1], 1);
-		call CarSerial.Angle(angle_status[2], 2);
+		reset = 1;
+		// call CarSerial.Angle(angle_status[0], 0);
+		// call CarSerial.Angle(angle_status[1], 1);
+		// call CarSerial.Angle(angle_status[2], 2);
 
 		return msg;
 	}
@@ -137,9 +139,15 @@ implementation {
 				call CarSerial.Angle(ANGLE_MIN, 2);
 				break;
 			case 11:
-				call CarSerial.Angle(ANGLE_DEFAULT, 0);
-				call CarSerial.Angle(ANGLE_DEFAULT, 1);
-				call CarSerial.Angle(ANGLE_DEFAULT, 2);
+				if (autotestcnt < 226) {
+					call CarSerial.Angle(ANGLE_DEFAULT, 0);
+				} else
+				if (autotestcnt < 234) {
+					call CarSerial.Angle(ANGLE_DEFAULT, 1);
+				} else
+				{
+					call CarSerial.Angle(ANGLE_DEFAULT, 2);
+				}
 				break;
 		}
 		autotestcnt++;
@@ -149,6 +157,24 @@ implementation {
 		if (autotestcnt < 240) {
 			post autotest();
 			return;
+		}
+
+		if (reset > 15) {
+			reset = 0;
+		} else
+		if (reset > 0) {
+			switch ((reset-1)/5) {
+				case 0:
+					call CarSerial.Angle(ANGLE_DEFAULT, 0);
+					break;
+				case 1:
+					call CarSerial.Angle(ANGLE_DEFAULT, 1);
+					break;
+				case 2:
+					call CarSerial.Angle(ANGLE_DEFAULT, 2);
+					break;
+			}
+			reset++;
 		}
 
 		if (cmd & 1) {
