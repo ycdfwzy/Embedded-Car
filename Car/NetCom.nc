@@ -166,12 +166,15 @@ implementation {
 			switch ((reset-1)/5) {
 				case 0:
 					call CarSerial.Angle(ANGLE_DEFAULT, 0);
+					cmd = 5;
 					break;
 				case 1:
 					call CarSerial.Angle(ANGLE_DEFAULT, 1);
+					cmd = 6;
 					break;
 				case 2:
 					call CarSerial.Angle(ANGLE_DEFAULT, 2);
+					cmd = 7;
 					break;
 			}
 			reset++;
